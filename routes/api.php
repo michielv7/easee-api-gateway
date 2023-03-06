@@ -28,8 +28,14 @@ Route::get('/power-usage/{chargerId}/{from}/{to}',  [EaseeController::class, 'ge
 
 Route::get('/charging-details/{chargerId}',  [EaseeController::class, 'getChargerDetails']);
 
-Route::post('/change-charger-settings', [EaseeController::class, 'changeChargerSettings']);
-
+Route::post('/change-charger-settings{chargerId}/{enabled}/
+            {enableIdleCurrent}/{limitToSinglePhaseCharging}/
+            {lockCablePermanently}/{smartButtonEnabled}/
+            {phaseMode}/{smartCharging}/{localPreAuthorizeEnabled}
+            {localAuthorizeOfflineEnabled}/{allowOfflineTxForUnknownId}
+            {offlineChargingMode}/{authorizationRequired}/{remoteStartRequired}
+            {ledStripBrightness}/{maxChargerCurrent}/{dynamicChargerCurrent}', [EaseeController::class, 'changeChargerSettings']);
+            
 Route::post('/get-configuration/{chargerId}', [EaseeController::class, 'getConfiguration']);
 
 
