@@ -4,106 +4,98 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-
+use Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory;
 
 class EaseeController extends Controller
-{
-    public function getRequest($url){
+{     
+    public function getRequest($url, $bearerToken){
         $response = Http::withHeaders([
-            'Authorization' => env('AUTHENTICATION_TOKEN_EASEE'),
+            'Authorization' => $bearerToken,
             'accept' => 'application/json',
         ])->get($url);
-
         $jsonData = $response->json(); 
         return $jsonData;
     }
 
-    public function getState(string $chargerId)
+
+    public function getState(string $chargerId, string $bearerToken)
     {       
-        $response = $this->getRequest('https://api.easee.cloud/api/chargers/'.$chargerId.'/state');
-        return $response;
+        return $this->getRequest(env('URL').$chargerId.'/state', $bearerToken);
+        
     }
 
-    public function getPowerUsage(string $chargerId, string $from, string $to)
+
+    public function getPowerUsage(string $chargerId, string $from, string $to, string $bearerToken)
     {
-        if(validISO8601Date($from)&&validISO8601Date($to)){
-            return getRequest('https://api.easee.cloud/api/chargers/'.$chargerId.'/usage/hourly/'.$from.'/'.$to);
-        }else{
-            return 'Invalid date format';
-        }
-    }
-
-    function validISO8601Date($value){
-        if (!is_string($value)){
-            return false;
-        }
-        $dateTime = \DateTime::createFromFormat(\DateTime::ISO8601, $value);
-        if ($dateTime) {
-            return $dateTime->format(\DateTime::ISO8601) === $value;
-        }
-        return false;
+        return $this->getRequest(env('URL').$chargerId.'/usage/hourly/'.$from.'/'.$to, $bearerToken);
     }
 
 
-    public function getChargerDetails(string $chargerId)
+    public function getChargerDetails(string $chargerId, string $bearerToken)
     {
-        return getRequest('https://api.easee.cloud/api/chargers/'.$chargerId.'/details');
+        return $this->getRequest(env('URL').$chargerId.'/details', $bearerToken);
     }
 
-
-
-    public function changeChargerSettings(string $chargerId, 
-                                          boolean $enabled, 
-                                          boolean $enableIdleCurrent, 
-                                          boolean $limitToSinglePhaseCharging, 
-                                          boolean $lockCablePermanently, 
-                                          boolean $smartButtonEnabled, 
-                                          int32 $phaseMode,
-                                          boolean $smartCharging,
-                                          boolean $localPreAuthorizeEnabled,
-                                          boolean $localAuthorizeOfflineEnabled,
-                                          boolean $allowOfflineTxForUnknownId,
-                                          int32 $offlineChargingMode,
-                                          boolean $authorizationRequired,
-                                          boolean $remoteStartRequired,
-                                          int32 $ledStripBrightness,
-                                          double $maxChargerCurrent,
-                                          double $dynamicChargerCurrent)
+    public function getConfiguration(string $chargerId, string $bearerToken)
     {
-        //implement controle checks for charger
-
-        $response = Http::withHeaders([
-            'Authorization' => env('AUTHENTICATION_TOKEN_EASEE'),
-            'accept' => 'application/json',
-        ])->post('https://api.easee.cloud/api/chargers/'.$chargerId.'/settings',[
-            'enabled' => $enabled,
-            'enableIdleCurrent' => $enableIdleCurrent,
-            'limitToSinglePhaseCharging' => $limitToSinglePhaseCharging,
-            'lockCablePermanently' => $lockCablePermanently,
-            'smartButtonEnabled' => $smartButtonEnabled,
-            'phaseMode' => $phaseMode,
-            'smartCharging' => $smartCharging,
-            'localPreAuthorizeEnabled' => $localPreAuthorizeEnabled,
-            'localAuthorizeOfflineEnabled' => $localAuthorizeOfflineEnabled,
-            'allowOfflineTxForUnknownId' => $allowOfflineTxForUnknownId,
-            'offlineChargingMode' => $offlineChargingMode,
-            'authorizationRequired' => $authorizationRequired,
-            'remoteStartRequired' => $remoteStartRequired,
-            'ledStripBrightness' => $ledStripBrightness,
-            'maxChargerCurrent' => $maxChargerCurrent,
-            'dynamicChargerCurrent' => $dynamicChargerCurrent
-        ]);
-        $jsonData = $response->json(); 
-        return $jsonData;
+        return $this->getRequest(env('URL').$chargerId.'/config', $bearerToken);
     }
 
-
-
-    public function getConfiguration(string $chargerId)
+    public function getStateOnline(string $chargerId, string $bearerToken)
     {
-        return getRequest('https://api.easee.cloud/api/chargers/'.$chargerId.'/config');
+        $jsonData = $this->getRequest(env('URL').$chargerId.'/state', $bearerToken);
+        return $jsonData['isOnline'] ? 'True' : 'False';
     }
 
+
+    public function changeChargerSettingsEnabled(string $chargerId, $boolean, string $bearerToken){
+        $client = new \GuzzleHttp\Client();
+        $response = $client->request('POST', env('URL').$chargerId.'/settings', [
+            'body' => '{"enabled":'.$boolean.'}',
+            'headers' => [
+              'Authorization' => $bearerToken,
+              'content-type' => 'application/*+json',
+            ],
+          ]);
+        return json_decode($response->getBody());
+    }
+    
+    public function changeChargerSettingsMaxChargerCurrent(string $chargerId, $float, $bearerToken){
+        $client = new \GuzzleHttp\Client();
+        $response = $client->request('POST', env('URL').$chargerId.'/settings', [
+            'body' => '{"maxChargerCurrent":'.$float.'}',
+            'headers' => [
+              'Authorization' => $bearerToken,
+              'content-type' => 'application/*+json',
+            ],
+          ]);
+        return json_decode($response->getBody());
+    }
+
+    public function changeChargerSettingsLedStripBrightness(string $chargerId, $int32, $bearerToken){
+        $client = new \GuzzleHttp\Client();
+        $response = $client->request('POST', env('URL').$chargerId.'/settings', [
+            'body' => '{"ledStripBrightness":'.$int32.'}',
+            'headers' => [
+              'Authorization' => $bearerToken,
+              'content-type' => 'application/*+json',
+            ],
+          ]);
+        return json_decode($response->getBody());
+    }
+
+    public function changeChargerSettingsDynamicChargerCurrent(string $chargerId, $float, $bearerToken){
+        $client = new \GuzzleHttp\Client();
+        $response = $client->request('POST', env('URL').$chargerId.'/settings', [
+            'body' => '{"dynamicChargerCurrent":'.$float.'}',
+            'headers' => [
+              'Authorization' => $bearerToken,
+              'content-type' => 'application/*+json',
+            ],
+          ]);
+        return json_decode($response->getBody());
+    }
+    
 }
 
 ?>

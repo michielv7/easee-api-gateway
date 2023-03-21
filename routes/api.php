@@ -14,29 +14,27 @@ use App\Http\Controllers\EaseeController;
 | routes are loaded by the RouteServiceProvider and all of them will
 | be assigned to the "api" middleware group. Make something great!
 |
+|  !!!! ID in API SPEC = Serial Number on device !!!
+
 */
-
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
 Route::get('/character/{characterId}', [Controller::class, 'getRickAndMorty']);
 
-Route::get('/state/{chargerId}',  [EaseeController::class, 'getState']);
+Route::get('/getConfiguration/{chargerId}/{bearerToken}', [EaseeController::class, 'getConfiguration']);
+Route::get('/state/{chargerId}/{bearerToken}',  [EaseeController::class, 'getState']);
+Route::get('/stateOnline/{chargerId}/{bearerToken}',  [EaseeController::class, 'getStateOnline']);
+Route::get('/powerUsage/{chargerId}/{from}/{to}/{bearerToken}',  [EaseeController::class, 'getPowerUsage']);
+Route::get('/chargingDetails/{chargerId}/{bearerToken}',  [EaseeController::class, 'getChargerDetails']);
+Route::get('/changeChargerSettings/changeChargerState/{chargerId}/{boolean}/{bearerToken}', [EaseeController::class, 'changeChargerSettingsEnabled']);
+Route::get('/changeChargerSettings/maxChargerCurrent/{chargerId}/{float}/{bearerToken}',  [EaseeController::class, 'changeChargerSettingsMaxChargerCurrent']); //SET MAX AMPERE
+Route::get('/changeChargerSettings/ledStripBrightness/{chargerId}/{int32}/{bearerToken}',  [EaseeController::class, 'changeChargerSettingsLedStripBrightness']); //SET LEDBAR BRIGHTNESS HIGHER / LOWER
+Route::get('/changeChargerSettings/dynamicChargerCurrent/{chargerId}/{float}/{bearerToken}',  [EaseeController::class, 'changeChargerSettingsDynamicChargerCurrent']);
 
-Route::get('/power-usage/{chargerId}/{from}/{to}',  [EaseeController::class, 'getPowerUsage']);
-
-Route::get('/charging-details/{chargerId}',  [EaseeController::class, 'getChargerDetails']);
-
-Route::post('/change-charger-settings{chargerId}/{enabled}/
-            {enableIdleCurrent}/{limitToSinglePhaseCharging}/
-            {lockCablePermanently}/{smartButtonEnabled}/
-            {phaseMode}/{smartCharging}/{localPreAuthorizeEnabled}
-            {localAuthorizeOfflineEnabled}/{allowOfflineTxForUnknownId}
-            {offlineChargingMode}/{authorizationRequired}/{remoteStartRequired}
-            {ledStripBrightness}/{maxChargerCurrent}/{dynamicChargerCurrent}', [EaseeController::class, 'changeChargerSettings']);
+Route::fallback(function(){
+    return response()->json([
+        'message' => 'Route Not Found'], 404);
+});
             
-Route::post('/get-configuration/{chargerId}', [EaseeController::class, 'getConfiguration']);
+?>
 
 
 
