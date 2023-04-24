@@ -17,17 +17,25 @@ use App\Http\Controllers\EaseeController;
 |  !!!! ID in API SPEC = Serial Number on device !!!
 
 */
-Route::get('/character/{characterId}', [Controller::class, 'getRickAndMorty']);
 
-Route::get('/getConfiguration/{chargerId}/{bearerToken}', [EaseeController::class, 'getConfiguration']);
-Route::get('/state/{chargerId}/{bearerToken}',  [EaseeController::class, 'getState']);
-Route::get('/stateOnline/{chargerId}/{bearerToken}',  [EaseeController::class, 'getStateOnline']);
-Route::get('/powerUsage/{chargerId}/{from}/{to}/{bearerToken}',  [EaseeController::class, 'getPowerUsage']);
-Route::get('/chargingDetails/{chargerId}/{bearerToken}',  [EaseeController::class, 'getChargerDetails']);
-Route::get('/changeChargerSettings/changeChargerState/{chargerId}/{boolean}/{bearerToken}', [EaseeController::class, 'changeChargerSettingsEnabled']);
-Route::get('/changeChargerSettings/maxChargerCurrent/{chargerId}/{float}/{bearerToken}',  [EaseeController::class, 'changeChargerSettingsMaxChargerCurrent']); //SET MAX AMPERE
-Route::get('/changeChargerSettings/ledStripBrightness/{chargerId}/{int32}/{bearerToken}',  [EaseeController::class, 'changeChargerSettingsLedStripBrightness']); //SET LEDBAR BRIGHTNESS HIGHER / LOWER
-Route::get('/changeChargerSettings/dynamicChargerCurrent/{chargerId}/{float}/{bearerToken}',  [EaseeController::class, 'changeChargerSettingsDynamicChargerCurrent']);
+Route::get('/', [EaseeController::class, 'index']);
+
+Route::get('/getConfiguration/{chargerId}/{username}/{password}', [EaseeController::class, 'getConfigurationOld']);
+Route::get('/state/{chargerId}/{username}/{password}',  [EaseeController::class, 'getState']);
+Route::get('/powerUsage/{chargerId}/{from}/{to}/{username}/{password}',  [EaseeController::class, 'getPowerUsage']);
+
+
+Route::get('/chargingDetails/{chargerId}/{username}/{password}',  [EaseeController::class, 'getChargerDetails']);
+
+Route::post('/ledstripbrightness', [EaseeController::class, 'setLedstripBrightness']);
+
+Route::post('/maxChargerCurrent', [EaseeController::class, 'setMaxChargerCurrent']);
+
+Route::post('/dynamicChargerCurrent', [EaseeController::class, 'setDynamicChargerCurrent']);
+
+Route::post('/isEnabled', [EaseeController::class, 'setIsEnabled']);
+
+Route::post('/getConfiguration', [EaseeController::class, 'getConfiguration']);
 
 Route::fallback(function(){
     return response()->json([

@@ -5,6 +5,9 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+
 
 class Controller extends BaseController
 {
@@ -14,28 +17,13 @@ class Controller extends BaseController
         $response = Http::get('https://rickandmortyapi.com/api/character/'.$characterId);
         $jsonData = $response->json();
 
-        $xml_data = new \SimpleXMLElement('<?xml version="1.0"?><data></data>');
-
-        $this->arrayToXML($jsonData, $xml_data);
-        
-        $result = $xml_data->asXML('test.xml');
-
-        return response(file_get_contents(public_path('test.xml')), 200, [
-            'Content-Type' => 'application/xml'
-        ]);
+        return $jsonData;
     }
 
-    function arrayToXML($data, $xml_data){
-        foreach( $data as $key => $value ) {
-            if( is_array($value) ) {
-                if( is_numeric($key) ){
-                    $key = 'item'.$key;
-                }
-                $subnode = $xml_data->addChild($key);
-                $this->arrayToXML($value, $subnode);
-            } else {
-                $xml_data->addChild("$key",htmlspecialchars("$value"));
-            }
-         }
+    public function createRandomFile(Request $request){
+        $random = $request->all();
+        Log::info($random);
+        $data = [ 'status' => 'success'];
+        return response()->json($data, 200);
     }
 }
